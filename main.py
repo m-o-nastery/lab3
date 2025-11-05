@@ -25,16 +25,16 @@ def hex_to_dec(hex_digit):
     return key
 
 
-def create_key_label(parent, key):
+def create_key_label(frame, key):
     label_2 = tk.Label(
-        parent,
+        frame,
         text='Ваш ключ:',
         font=('Arial Bold', 20),
         bg='white',
         fg='red',
     )
     label_key = tk.Label(
-        parent,
+        frame,
         text=key,
         font=('Arial Bold', 20),
         bg='white',
@@ -85,22 +85,23 @@ def limit_text(entry_value):
     return len(entry_value) <= 5
 
 
-def create_main_frame(parent):
-    frame = tk.Frame(
-        parent,
+def create_main_frame():
+    global main_frame
+    main_frame = tk.Frame(
+        root,
         bg='red',
         highlightcolor='white',
         highlightbackground='white',
         highlightthickness=3,
         width=600,
     )
-    frame.pack(side=tk.LEFT, padx=100)
-    return frame
+    main_frame.pack(side=tk.LEFT, padx=100)
 
 
-def create_title_label(parent):
-    return tk.Label(
-        parent,
+def create_title_label():
+    global label_title
+    label_title = tk.Label(
+        main_frame,
         text='Введите пятизначное HEX-число:',
         font=('Arial Bold', 20),
         bg='red',
@@ -108,10 +109,11 @@ def create_title_label(parent):
     )
 
 
-def create_entry(parent, root):
+def create_entry():
+    global entry
     vcmd = (root.register(limit_text), '%P')
     entry = tk.Entry(
-        parent,
+        main_frame,
         width=15,
         fg='red',
         font=('Arial Bold', 30),
@@ -120,12 +122,12 @@ def create_entry(parent, root):
         justify='center',
     )
     entry.focus()
-    return entry
 
 
-def create_button(parent):
-    return tk.Button(
-        parent,
+def create_button():
+    global button
+    button = tk.Button(
+        main_frame,
         text='Сгенерировать',
         font=('Arial Bold', 20),
         bg='red',
@@ -136,12 +138,12 @@ def create_button(parent):
     )
 
 
-def create_background_label(parent, image):
-    tk.Label(parent, image=image, bg='red').pack(side='right')
+def create_background_label():
+    tk.Label(root, image=bg, bg='red').pack(side='right')
 
 
 def main():
-    global root, icon, entry
+    global root, icon, bg
 
     root = tk.Tk()
     root.title('Генератор ключа')
@@ -153,18 +155,17 @@ def main():
     root.iconphoto(False, icon)
 
     bg = tk.PhotoImage(file='spider.png')
-    create_background_label(root, bg)
+    create_background_label()
 
-    main_frame = create_main_frame(root)
-    label_title = create_title_label(main_frame)
-    entry = create_entry(main_frame, root)
-    button = create_button(main_frame)
+    create_main_frame()
+    create_title_label()
+    create_entry()
+    create_button()
 
     label_title.grid(column=0, row=0, padx=10, pady=10)
     entry.grid(column=0, row=1, padx=10, pady=10)
     button.grid(column=0, row=2, padx=10, pady=10)
 
-    
     pygame.mixer.init()
     pygame.mixer.music.load('music.mp3')
     pygame.mixer.music.play(-1)
