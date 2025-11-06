@@ -6,6 +6,12 @@ import string
 import pygame
 
 
+WIDTH_MR = 1280
+HEIGHT_MR = 720
+WIDTH_KR = 400
+HEIGHT_KR = 150
+LIMIT = 5
+
 def is_hex(hex_digit):
     return bool(re.fullmatch(r'[0-9A-Fa-f]+', hex_digit))
 
@@ -16,7 +22,7 @@ def hex_to_dec(hex_digit):
     pieces = []
 
     for i in range(3):
-        place = random.randint(0, 4)
+        place = random.randint(0, LIMIT-1)
         res = ''.join(random.choice(digits) for _ in range(place)) + dec_digits[i]
         res += ''.join(random.choice(digits) for _ in range(5 - place - 1))
         pieces.append(res)
@@ -49,16 +55,15 @@ def create_key_label(frame, key):
     label_key.pack()
 
 
-def key_root(hex_digit):
+def key_root(hex_digit, root, icon):
     key_window = tk.Toplevel(root)
     key_window.title('Ключ')
-    key_window.geometry('400x150')
+    key_window.geometry(f'{WIDTH_KR}x{HEIGHT_KR}')
     key_window.resizable(width=False, height=False)
     key_window['bg'] = 'white'
     key_window.iconphoto(False, icon)
 
     key = hex_to_dec(hex_digit)
-
     new_frame = tk.Frame(key_window, bg='white')
     new_frame.place(relx=0.5, rely=0.5, anchor='center')
 
@@ -67,27 +72,25 @@ def key_root(hex_digit):
     key_window.update()
     window_name = key_window.winfo_pathname(key_window.winfo_id())
     root.eval(f'tk::PlaceWindow {window_name} center')
-    return key_window
 
 
-def clicked():
+def limit_text(entry_value):
+    return len(entry_value) <= LIMIT
+
+
+def clicked(entry, root, icon):
     hex_digit = entry.get()
     if is_hex(hex_digit):
-        if len(hex_digit) < 5:
-            messagebox.showinfo('Ошибка', 'Число должно содержать 5 символов.')
+        if len(hex_digit) < LIMIT:
+            messagebox.showinfo('Ошибка', f'Число должно содержать {LIMIT} символов.')
         else:
-            key_root(hex_digit)
+            key_root(hex_digit, root, icon)
     else:
         messagebox.showinfo('Ошибка', 'Введённое вами число не HEX.')
 
 
-def limit_text(entry_value):
-    return len(entry_value) <= 5
-
-
-def create_main_frame():
-    global main_frame
-    main_frame = tk.Frame(
+def create_main_frame(root):
+    frame = tk.Frame(
         root,
         bg='red',
         highlightcolor='white',
@@ -95,12 +98,12 @@ def create_main_frame():
         highlightthickness=3,
         width=600,
     )
-    main_frame.pack(side=tk.LEFT, padx=100)
+    frame.pack(side=tk.LEFT, padx=100)
+    return frame
 
 
-def create_title_label():
-    global label_title
-    label_title = tk.Label(
+def create_title_label(main_frame):
+    return tk.Label(
         main_frame,
         text='Введите пятизначное HEX-число:',
         font=('Arial Bold', 20),
@@ -109,8 +112,7 @@ def create_title_label():
     )
 
 
-def create_entry():
-    global entry
+def create_entry(main_frame, root):
     vcmd = (root.register(limit_text), '%P')
     entry = tk.Entry(
         main_frame,
@@ -122,11 +124,11 @@ def create_entry():
         justify='center',
     )
     entry.focus()
+    return entry
 
 
-def create_button():
-    global button
-    button = tk.Button(
+def create_button(main_frame, entry, root, icon):
+    return tk.Button(
         main_frame,
         text='Сгенерировать',
         font=('Arial Bold', 20),
@@ -134,20 +136,18 @@ def create_button():
         fg='white',
         activebackground='white',
         activeforeground='red',
-        command=clicked,
+        command=lambda: clicked(entry, root, icon),
     )
 
 
-def create_background_label():
+def create_background_label(root, bg):
     tk.Label(root, image=bg, bg='red').pack(side='right')
 
 
 def main():
-    global root, icon, bg
-
     root = tk.Tk()
     root.title('Генератор ключа')
-    root.geometry('1280x720')
+    root.geometry(f'{WIDTH_MR}x{HEIGHT_MR}')
     root.resizable(width=False, height=False)
     root['bg'] = 'red'
 
@@ -155,12 +155,12 @@ def main():
     root.iconphoto(False, icon)
 
     bg = tk.PhotoImage(file='spider.png')
-    create_background_label()
+    create_background_label(root, bg)
 
-    create_main_frame()
-    create_title_label()
-    create_entry()
-    create_button()
+    main_frame = create_main_frame(root)
+    label_title = create_title_label(main_frame)
+    entry = create_entry(main_frame, root)
+    button = create_button(main_frame, entry, root, icon)
 
     label_title.grid(column=0, row=0, padx=10, pady=10)
     entry.grid(column=0, row=1, padx=10, pady=10)
